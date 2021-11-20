@@ -186,6 +186,8 @@ function refreshNearby(coordinates, nearbyUsers) {
             usersIndex[users[i].relId] = i;
             users[i].userId = nearbyUsers[i].userId;
             users[i].name = nearbyUsers[i].name;
+            users[i].username = nearbyUsers[i].username;
+            console.log(nearbyUsers[i]);
 
             if (nearbyUsers[i].photo === undefined) {
                 users[i].photo = `/no_photo.png`;
@@ -258,7 +260,9 @@ function refreshNearby(coordinates, nearbyUsers) {
             <div class="list-group-item list-group-item-action list-item" data-user-id="${user.relId}">
                 <div><a href="#"><span class="w-48 avatar gd-primary"><img src="${user.photo}" alt="."></span></a>
                 </div>
-                <div class="flex user-info"><a href="#" class="item-author text-color">${user.name}</a>
+                <div class="flex user-info">
+                    <a href="#" class="item-author text-color">${user.name}</a>
+                    <span class="username-color">${user.username ? `@${user.username}` : ""}</span>
                     <div class="item-except text-sm h-1x">#${user.relId} - 
                     Distances: <span class="badge badge-primary badge-pill">${user.distances.length}</span> 
                     Locations: <span class="badge badge-primary badge-pill">${user.locations.length}</span></div>
