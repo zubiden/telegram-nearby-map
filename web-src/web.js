@@ -187,7 +187,6 @@ function refreshNearby(coordinates, nearbyUsers) {
             users[i].userId = nearbyUsers[i].userId;
             users[i].name = nearbyUsers[i].name;
             users[i].username = nearbyUsers[i].username;
-            console.log(nearbyUsers[i]);
 
             if (nearbyUsers[i].photo === undefined) {
                 users[i].photo = `/no_photo.png`;
@@ -310,7 +309,7 @@ $('#btn_reset').click(function () {
     source.clear();
 });
 
-$('#txt_searchDistance').change(function () {
+$('#txt_gap').change(function () {
     let newSearchDistance = parseInt($(this).val());
     console.log(`Changed search distance value to ${newSearchDistance}`);
 
