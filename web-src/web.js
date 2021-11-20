@@ -12,7 +12,7 @@ import { Circle as CircleStyle, Stroke, Style, Fill, Text } from 'ol/style';
 import { OSM, Vector as VectorSource } from 'ol/source';
 import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer';
 
-import { trilaterate, fromLonLat_epsg4978, toLonLat_epsg4978 } from './trilaterate.js';
+import locate from 'multilateration';
 import SnailShellMatrix from './SnailShellMatrix.js';
 import { flashFeature } from './utils.js';
 
@@ -130,6 +130,13 @@ function addUserMarker(c, text) {
     ]);
     var feature = new Feature(geom);
     feature.set('name', text);
+    feature.setId(text);
+
+    const oldMarker = sourceUsers.getFeatureById(text);
+    if (oldMarker) {
+        sourceUsers.removeFeature(oldMarker);
+    }
+
     sourceUsers.addFeature(feature);
 }
 
@@ -195,32 +202,24 @@ function refreshNearby(coordinates, nearbyUsers) {
                 continue;
             }
 
-            // trilaterate when there are 3 distances
-            if (users[i].distances.length % 3 === 0) {
-                let lastDistances = users[i].distances.slice(users[i].distances.length - 3);
+            if (users[i].distances.length >= 3) {
+                const beacons = users[i].distances.map(dist => {
+                    const [lng, lat] = toLonLat(dist.coordinates);
+                    const { distance } = dist;
+                    return {
+                        lat,
+                        lng,
+                        distance
+                    };
+                });
 
-                let c1 = toLonLat(lastDistances[0].coordinates);
-                let c2 = toLonLat(lastDistances[1].coordinates);
-                let c3 = toLonLat(lastDistances[2].coordinates);
-
-                let p1 = fromLonLat_epsg4978({ lon: c1[0], lat: c1[1] });
-                let p2 = fromLonLat_epsg4978({ lon: c2[0], lat: c2[1] });
-                let p3 = fromLonLat_epsg4978({ lon: c3[0], lat: c3[1] });
-
-                p1.r = lastDistances[0].distance;
-                p2.r = lastDistances[1].distance;
-                p3.r = lastDistances[2].distance;
-
-                let triP = trilaterate(p1, p2, p3, true);
-                console.log(`Trilaterated point: ${triP}`);
-                if (triP !== null) {
-                    let triLonLat = toLonLat_epsg4978(triP);
-                    let triC = fromLonLat([triLonLat.lon, triLonLat.lat]);
+                const point = locate(beacons, {geometry: 'earth'});
+                if (point) {
+                    const triC = fromLonLat([point.lng, point.lat]);
                     users[i].locations.push({
                         time: now,
                         coordinates: triC,
                     });
-
                     addUserMarker(triC, users[i].relId.toString());
                 }
             }
