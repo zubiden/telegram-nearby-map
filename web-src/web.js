@@ -212,7 +212,7 @@ function refreshNearby(coordinates, nearbyUsers) {
                         lng,
                         distance
                     };
-                });
+                }).sort((a, b) => a.distance - b.distance); // Put nearest beacons first
 
                 const point = locate(beacons, {geometry: 'earth'});
                 if (point) {
